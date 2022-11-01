@@ -36,4 +36,5 @@ class CommentViewSet(viewsets.ModelViewSet):
     def perform_create(self, serializer):
         """При создании комментария указать пользователя как автора"""
         post_id = self.kwargs.get('post_id')
-        serializer.save(author=self.request.user, post_id=post_id)
+        post = get_object_or_404(Post, id=post_id)
+        return serializer.save(author=self.request.user, post_id=post.id)

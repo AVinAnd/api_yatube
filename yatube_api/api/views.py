@@ -1,30 +1,21 @@
-from django.core.exceptions import PermissionDenied
+from django.shortcuts import get_object_or_404
 from rest_framework import viewsets
+from rest_framework.permissions import IsAuthenticated
 
 from posts.models import Post, Group, Comment
 
 from .serializers import PostSerializer, GroupSerializer, CommentSerializer
+from .permissions import OnlyAuthorEdit
 
 
 class PostViewSet(viewsets.ModelViewSet):
     queryset = Post.objects.all()
     serializer_class = PostSerializer
+    permission_classes = [IsAuthenticated, OnlyAuthorEdit]
 
     def perform_create(self, serializer):
         """При создании поста указать пользователя как автора"""
         serializer.save(author=self.request.user)
-
-    def perform_destroy(self, instance):
-        """Проверка доступа пользователя к удалению поста"""
-        if self.request.user != instance.author:
-            raise PermissionDenied('Удаление чужих постов запрещено')
-        super(PostViewSet, self).perform_destroy(instance)
-
-    def perform_update(self, serializer):
-        """Проверка доступа пользователя к изменению поста"""
-        if self.request.user != serializer.instance.author:
-            raise PermissionDenied('Изменение чужих постов запрещено')
-        super(PostViewSet, self).perform_update(serializer)
 
 
 class GroupViewSet(viewsets.ReadOnlyModelViewSet):
@@ -34,26 +25,15 @@ class GroupViewSet(viewsets.ReadOnlyModelViewSet):
 
 class CommentViewSet(viewsets.ModelViewSet):
     serializer_class = CommentSerializer
+    permission_classes = [IsAuthenticated, OnlyAuthorEdit]
 
     def get_queryset(self):
         """Получаем комментарии конкретного поста"""
         post_id = self.kwargs.get('post_id')
-        comments_queryset = Comment.objects.filter(post=post_id)
-        return comments_queryset
+        post = get_object_or_404(Post, id=post_id)
+        return post.comments
 
     def perform_create(self, serializer):
         """При создании комментария указать пользователя как автора"""
         post_id = self.kwargs.get('post_id')
         serializer.save(author=self.request.user, post_id=post_id)
-
-    def perform_destroy(self, instance):
-        """Проверка доступа пользователя к удалению комментария"""
-        if self.request.user != instance.author:
-            raise PermissionDenied('Удаление чужих комментариев запрещено')
-        super(CommentViewSet, self).perform_destroy(instance)
-
-    def perform_update(self, serializer):
-        """Проверка доступа пользователя к изменению комментария"""
-        if self.request.user != serializer.instance.author:
-            raise PermissionDenied('Изменение чужих комментариев запрещено')
-        super(CommentViewSet, self).perform_update(serializer)

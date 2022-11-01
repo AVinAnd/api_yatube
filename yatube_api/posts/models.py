@@ -2,6 +2,7 @@ from django.contrib.auth import get_user_model
 from django.db import models
 
 User = get_user_model()
+CHARS_IN_STR = 15
 
 
 class Group(models.Model):
@@ -23,14 +24,14 @@ class Post(models.Model):
     )
     image = models.ImageField(
         upload_to='posts/', null=True, blank=True
-    )  # поле для картинки
+    )
     group = models.ForeignKey(
         Group, on_delete=models.CASCADE,
         related_name="posts", blank=True, null=True
     )
 
     def __str__(self):
-        return self.text
+        return self.text[:CHARS_IN_STR]
 
 
 class Comment(models.Model):

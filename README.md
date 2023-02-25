@@ -52,3 +52,7 @@ python manage.py runserver
 - api/v1/posts/{post_id}/comments/{comment_id}/ (GET, PUT, PATCH, DELETE): получаем, редактируем или удаляем комментарий по id у поста с id=post_id.
 
 В ответ на запросы POST, PUT и PATCH, API возвращает объект, который был добавлен или изменён.
+
+## Об авторе
+Андрей Виноградов - студент Яндекс Практикум
+по курсу Python-разработчик
